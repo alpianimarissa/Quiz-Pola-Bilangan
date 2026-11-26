@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif Pola Bilangan (30 Soal) - Kelas 4 SD</title>
+    <!-- Memuat Tailwind CSS untuk tata letak responsif -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Google Fonts: Fredoka & Nunito -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Memuat Tone.js untuk efek suara interaktif -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Memuat Canvas Confetti untuk perayaan hasil akhir -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Nunito', sans-serif;
+            background-color: #f0f9ff;
+            background-image: radial-gradient(#bae6fd 1.5px, transparent 1.5px);
+            background-size: 24px 24px;
+            overflow-x: hidden;
+        }
+        h1, h2, h3, .font-fredoka {
+            font-family: 'Fredoka', sans-serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-6px); }
+            75% { transform: translateX(6px); }
+        }
+        .animate-shake {
+            animation: shake 0.35s ease-in-out;
+        }
+        /* Custom scrollbar untuk panel navigasi */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Header & Status Penyimpanan Otomatis -->
+    <header class="bg-white/95 backdrop-blur-md shadow-sm sticky top-0 z-40 border-b-4 border-sky-200">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Identitas Kuis -->
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-br from-amber-400 to-orange-500 text-white p-2.5 rounded-2xl shadow-md font-fredoka font-bold text-xl">
+                    🏆
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-2xl font-bold text-sky-900 leading-tight">Kuis Detektif Pola Bilangan</h1>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-xs font-bold text-sky-600 uppercase tracking-wider">30 Soal • Kelas 4 SD</span>
+                        <span id="saveIndicator" class="inline-flex items-center gap-1 text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
+                            <span>💾</span> Tersimpan Otomatis
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kontrol Suara, Nama Siswa, & Reset -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleSound()" class="p-2.5 rounded-xl bg-sky-100 text-sky-700 hover:bg-sky-200 transition font-bold text-xs sm:text-sm flex items-center gap-1.5" title="Aktifkan/Matikan Suara">
+                    <span id="soundIcon">🔊</span>
+                    <span class="hidden sm:inline" id="soundText">Suara</span>
+                </button>
+                <button onclick="openResetModal()" class="p-2.5 rounded-xl bg-rose-100 text-rose-700 hover:bg-rose-200 transition font-bold text-xs sm:text-sm flex items-center gap-1.5" title="Ulangi Kuis dari Awal">
+                    <span>🔄</span>
+                    <span class="hidden sm:inline">Reset Kuis</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Progress Bar Pengerjaan -->
+        <div class="w-full bg-sky-100 h-2">
+            <div id="progressBar" class="bg-gradient-to-r from-sky-500 via-teal-400 to-amber-400 h-2 transition-all duration-500" style="width: 0%;"></div>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="flex-grow max-w-6xl w-full mx-auto px-4 py-6">
+        
+        <!-- Kartu Identitas Singkat & Ringkasan Skor -->
+        <div class="bg-white rounded-3xl shadow-sm border-2 border-sky-100 p-4 mb-6 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 w-full md:w-auto">
+                <span class="text-2xl">🧑‍🎓</span>
+                <div class="flex-grow">
+                    <label for="studentName" class="block text-[11px] font-extrabold uppercase text-slate-400">Nama Detektif:</label>
+                    <input type="text" id="studentName" placeholder="Ketik namamu di sini..." oninput="saveStudentName()" class="w-full md:w-64 font-bold text-slate-800 bg-sky-50/70 border border-sky-200 rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:border-sky-500">
+                </div>
+            </div>
+
+            <!-- Statistik Langsung -->
+            <div class="grid grid-cols-3 gap-2 sm:gap-4 w-full md:w-auto text-center">
+                <div class="bg-sky-50 border border-sky-200 px-3 py-2 rounded-2xl">
+                    <p class="text-[11px] font-bold text-sky-700 uppercase">Dijawab</p>
+                    <p class="font-fredoka font-bold text-lg text-sky-900"><span id="statAnswered">0</span>/30</p>
+                </div>
+                <div class="bg-emerald-50 border border-emerald-200 px-3 py-2 rounded-2xl">
+                    <p class="text-[11px] font-bold text-emerald-700 uppercase">Benar</p>
+                    <p class="font-fredoka font-bold text-lg text-emerald-700" id="statCorrect">0</p>
+                </div>
+                <div class="bg-amber-50 border border-amber-200 px-3 py-2 rounded-2xl">
+                    <p class="text-[11px] font-bold text-amber-700 uppercase">Nilai</p>
+                    <p class="font-fredoka font-bold text-lg text-amber-700" id="statScore">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Utama: Area Soal (Kiri) & Sistem Navigasi 30 Nomor (Kanan) -->
+        <div id="quizWorkspace" class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Kolom Kiri: Kartu Soal Aktif -->
+            <div class="lg:col-span-8 bg-white rounded-3xl shadow-lg border-2 border-indigo-100 p-5 sm:p-8">
+                <div id="questionCard" class="fade-in">
+                    <!-- Konten Soal Dirender oleh JavaScript -->
+                </div>
+
+                <!-- Navigasi Sebelumnya / Selanjutnya -->
+                <div class="mt-6 pt-5 border-t-2 border-slate-100 flex items-center justify-between gap-3">
+                    <button id="prevBtn" onclick="navigateQuestion(-1)" class="px-5 py-3 rounded-2xl font-fredoka font-bold text-sm sm:text-base bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-2">
+                        <span>⬅️</span>
+                        <span>Sebelumnya</span>
+                    </button>
+
+                    <button id="finishBtn" onclick="showFinalSummary()" class="hidden px-6 py-3 rounded-2xl font-fredoka font-bold text-sm sm:text-base bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white shadow-md transition flex items-center gap-2">
+                        <span>🏆</span>
+                        <span>Lihat Rapor Akhir</span>
+                    </button>
+
+                    <button id="nextBtn" onclick="navigateQuestion(1)" class="px-5 py-3 rounded-2xl font-fredoka font-bold text-sm sm:text-base bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white shadow-md disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center gap-2">
+                        <span>Selanjutnya</span>
+                        <span>➡️</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Kolom Kanan: Panel Navigasi Nomor Soal (1-30) -->
+            <aside class="lg:col-span-4 bg-white rounded-3xl shadow-lg border-2 border-sky-100 p-5 sticky top-24">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-fredoka font-bold text-lg text-slate-800 flex items-center gap-2">
+                        <span>🗺️</span> Peta Nomor Soal
+                    </h2>
+                    <span class="text-xs font-bold text-slate-500">Klik nomor untuk lompat</span>
+                </div>
+
+                <!-- Legenda Warna Status -->
+                <div class="grid grid-cols-2 gap-2 text-xs font-bold mb-4 bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-md bg-sky-600 inline-block"></span>
+                        <span class="text-slate-600">Sedang Dibuka</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-md bg-emerald-500 inline-block"></span>
+                        <span class="text-slate-600">Jawaban Benar</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-md bg-rose-500 inline-block"></span>
+                        <span class="text-slate-600">Jawaban Salah</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-4 h-4 rounded-md bg-slate-200 inline-block"></span>
+                        <span class="text-slate-600">Belum Dijawab</span>
+                    </div>
+                </div>
+
+                <!-- Grid 30 Tombol Nomor -->
+                <div id="navGrid" class="grid grid-cols-5 sm:grid-cols-6 lg:grid-cols-5 gap-2">
+                    <!-- Diisi oleh JavaScript -->
+                </div>
+
+                <div class="mt-5 pt-4 border-t border-slate-100">
+                    <button onclick="showFinalSummary()" class="w-full py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-fredoka font-bold text-sm border border-indigo-200 transition">
+                        📊 Cek Rapor & Hasil Sementara
+                    </button>
+                </div>
+            </aside>
+        </div>
+
+        <!-- Layar Rapor Hasil Akhir -->
+        <section id="finalReportScreen" class="hidden bg-white rounded-3xl shadow-xl border-2 border-amber-200 p-6 sm:p-10 text-center fade-in">
+            <div class="text-6xl sm:text-7xl mb-3" id="reportEmoji">🏆</div>
+            <span class="inline-block bg-amber-100 text-amber-800 font-extrabold text-xs px-3 py-1 rounded-full uppercase mb-2">Rapor Petualangan Pola Bilangan</span>
+            <h2 class="text-2xl sm:text-4xl font-bold text-slate-900 mb-1" id="reportTitle">Hebat, Detektif Matematika!</h2>
+            <p class="text-slate-600 mb-6" id="reportSubtitle">Berikut adalah hasil kerja kerasmu menyelesaikan kuis pola bilangan.</p>
+
+            <!-- Kartu Nilai Utama -->
+            <div class="max-w-xl mx-auto grid grid-cols-3 gap-3 sm:gap-4 mb-8">
+                <div class="bg-gradient-to-b from-amber-50 to-amber-100 border-2 border-amber-300 rounded-3xl p-4">
+                    <p class="text-xs font-extrabold text-amber-800 uppercase">Nilai Akhir</p>
+                    <p class="font-fredoka font-bold text-3xl sm:text-4xl text-amber-600 mt-1" id="finalGrade">0</p>
+                </div>
+                <div class="bg-gradient-to-b from-emerald-50 to-emerald-100 border-2 border-emerald-300 rounded-3xl p-4">
+                    <p class="text-xs font-extrabold text-emerald-800 uppercase">Benar</p>
+                    <p class="font-fredoka font-bold text-3xl sm:text-4xl text-emerald-600 mt-1"><span id="finalCorrect">0</span><span class="text-base">/30</span></p>
+                </div>
+                <div class="bg-gradient-to-b from-rose-50 to-rose-100 border-2 border-rose-300 rounded-3xl p-4">
+                    <p class="text-xs font-extrabold text-rose-800 uppercase">Salah</p>
+                    <p class="font-fredoka font-bold text-3xl sm:text-4xl text-rose-600 mt-1" id="finalWrong">0</p>
+                </div>
+            </div>
+
+            <!-- Rincian Per Kategori Operasi -->
+            <div class="max-w-2xl mx-auto bg-slate-50 rounded-3xl p-5 border border-slate-200 mb-8 text-left">
+                <h3 class="font-fredoka font-bold text-lg text-slate-800 mb-3 text-center">📈 Rincian Penguasaan Materi</h3>
+                <div id="categoryBreakdown" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Diisi oleh JS -->
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-3">
+                <button onclick="backToQuiz()" class="px-6 py-3.5 rounded-2xl font-fredoka font-bold bg-sky-600 hover:bg-sky-700 text-white shadow-md transition">
+                    🔍 Kembali Periksa Soal
+                </button>
+                <button onclick="openResetModal()" class="px-6 py-3.5 rounded-2xl font-fredoka font-bold bg-rose-100 hover:bg-rose-200 text-rose-800 transition">
+                    🔄 Ulangi Kuis Baru
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Modal Konfirmasi Reset (Menggantikan confirm() bawaan browser) -->
+    <div id="resetModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border-2 border-rose-200 text-center fade-in">
+            <div class="text-5xl mb-3">⚠️</div>
+            <h3 class="font-fredoka font-bold text-2xl text-slate-900 mb-2">Ulangi Kuis dari Awal?</h3>
+            <p class="text-sm text-slate-600 mb-6">Semua jawaban dan skor yang sudah tersimpan akan dihapus. Kamu yakin ingin memulai dari soal nomor 1 lagi?</p>
+            <div class="flex gap-3 justify-center">
+                <button onclick="closeResetModal()" class="px-5 py-2.5 rounded-2xl font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                    Batal
+                </button>
+                <button onclick="confirmResetQuiz()" class="px-5 py-2.5 rounded-2xl font-bold bg-rose-600 hover:bg-rose-700 text-white shadow-md transition">
+                    Ya, Reset Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs sm:text-sm text-slate-500 mt-8">
+        <p>Kuis Interaktif Matematika Kelas 4 SD • Materi Pola Bilangan (+, −, ×, ÷) • Penyimpanan Otomatis Aktif</p>
+    </footer>
+
+    <!-- ========================================================= -->
+    <!-- LOGIKA JAVASCRIPT: BANK 30 SOAL, NAVIGASI & AUTO-SAVE     -->
+    <!-- ========================================================= -->
+    <script>
+        // --- 1. EFEK SUARA (TONE.JS) ---
+        let soundEnabled = true;
+        let synth = null;
+
+        function initAudio() {
+            if (!synth && typeof Tone !== 'undefined') {
+                synth = new Tone.PolySynth(Tone.Synth).toDestination();
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            document.getElementById('soundIcon').textContent = soundEnabled ? '🔊' : '🔇';
+            document.getElementById('soundText').textContent = soundEnabled ? 'Suara' : 'Mati';
+            if (soundEnabled) playTone('click');
+        }
+
+        function playTone(type) {
+            if (!soundEnabled) return;
+            try {
+                initAudio();
+                if (Tone.context.state !== 'running') Tone.start();
+                if (type === 'click') synth.triggerAttackRelease('C5', '16n');
+                else if (type === 'correct') synth.triggerAttackRelease(['C5', 'E5', 'G5'], '8n');
+                else if (type === 'wrong') synth.triggerAttackRelease(['E3', 'Eb3'], '8n');
+                else if (type === 'win') {
+                    const now = Tone.now();
+                    synth.triggerAttackRelease('C5', '8n', now);
+                    synth.triggerAttackRelease('E5', '8n', now + 0.12);
+                    synth.triggerAttackRelease('G5', '8n', now + 0.24);
+                    synth.triggerAttackRelease('C6', '4n', now + 0.36);
+                }
+            } catch (e) {}
+        }
+
+        // --- 2. BANK 30 SOAL POLA BILANGAN KELAS 4 SD ---
+        // Distribusi kunci jawaban dirancang seimbang dan tidak berpola:
+        // Index 0 (A): 8 soal | Index 1 (B): 7 soal | Index 2 (C): 8 soal | Index 3 (D): 7 soal (Total = 30)
+        const questionsBank = [
+            // Soal 1 - Penjumlahan (Kunci: C / index 2)
+            {
+                id: 1,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Perhatikan barisan bilangan loncat berikut ini:',
+                sequence: ['3', '7', '11', '15', '?'],
+                question: 'Bilangan yang tepat untuk mengisi tanda tanya (?) adalah...',
+                options: ['17', '18', '19', '20'],
+                answerIndex: 2,
+                explanation: 'Setiap langkah ke kanan bertambah 4 (+4): 3 + 4 = 7, 7 + 4 = 11, 11 + 4 = 15, maka 15 + 4 = 19.'
+            },
+            // Soal 2 - Pengurangan (Kunci: A / index 0)
+            {
+                id: 2,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Ibu menyiapkan 50 kue donat. Setiap jam kue berkurang dalam jumlah tetap:',
+                sequence: ['50', '44', '38', '32', '?'],
+                question: 'Sisa kue donat berikutnya adalah...',
+                options: ['26', '28', '24', '30'],
+                answerIndex: 0,
+                explanation: 'Aturan polanya adalah dikurangi 6 (−6): 50 − 6 = 44, 44 − 6 = 38, 38 − 6 = 32, maka 32 − 6 = 26.'
+            },
+            // Soal 3 - Perkalian (Kunci: D / index 3)
+            {
+                id: 3,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Dalam percobaan IPA, 2 sel membelah diri menjadi dua kali lipat setiap jam:',
+                sequence: ['2', '4', '8', '16', '?'],
+                question: 'Jumlah sel pada jam berikutnya adalah...',
+                options: ['20', '24', '30', '32'],
+                answerIndex: 3,
+                explanation: 'Aturan polanya adalah dikali 2 (×2): 2 × 2 = 4, 4 × 2 = 8, 8 × 2 = 16, maka 16 × 2 = 32.'
+            },
+            // Soal 4 - Pembagian (Kunci: B / index 1)
+            {
+                id: 4,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Sebuah turnamen bulu tangkis diikuti 64 peserta dengan sistem gugur (setengahnya gugur tiap babak):',
+                sequence: ['64', '32', '16', '8', '?'],
+                question: 'Jumlah peserta yang lolos ke babak berikutnya adalah...',
+                options: ['6', '4', '2', '0'],
+                answerIndex: 1,
+                explanation: 'Aturan polanya adalah dibagi 2 (÷2): 64 ÷ 2 = 32, 32 ÷ 2 = 16, 16 ÷ 2 = 8, maka 8 ÷ 2 = 4.'
+            },
+            // Soal 5 - Penjumlahan (Kunci: B / index 1)
+            {
+                id: 5,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Nomor rumah di sisi kiri Jalan Melati tersusun rapi membentuk pola:',
+                sequence: ['12', '19', '?', '33', '40'],
+                question: 'Nomor rumah yang tertutup tanda tanya (?) adalah...',
+                options: ['25', '26', '27', '28'],
+                answerIndex: 1,
+                explanation: 'Dari 12 ke 19 bertambah 7 (+7). Maka bilangan yang hilang adalah 19 + 7 = 26 (dan 26 + 7 = 33).'
+            },
+            // Soal 6 - Pengurangan (Kunci: D / index 3)
+            {
+                id: 6,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Perhatikan urutan bilangan mengecil berikut ini:',
+                sequence: ['85', '76', '67', '?', '49'],
+                question: 'Bilangan yang tepat untuk melengkapi bagian yang kosong adalah...',
+                options: ['60', '59', '57', '58'],
+                answerIndex: 3,
+                explanation: 'Setiap langkah berkurang 9 (−9): 85 − 9 = 76, 76 − 9 = 67, maka 67 − 9 = 58.'
+            },
+            // Soal 7 - Perkalian (Kunci: A / index 0)
+            {
+                id: 7,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Amati loncatan angka pada barisan pola bilangan berikut:',
+                sequence: ['1', '3', '9', '27', '?'],
+                question: 'Bilangan kelima pada pola tersebut adalah...',
+                options: ['81', '54', '36', '72'],
+                answerIndex: 0,
+                explanation: 'Aturan polanya adalah dikali 3 (×3): 1 × 3 = 3, 3 × 3 = 9, 9 × 3 = 27, maka 27 × 3 = 81.'
+            },
+            // Soal 8 - Pembagian (Kunci: C / index 2)
+            {
+                id: 8,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Perhatikan deretan angka yang mengecil cepat berikut ini:',
+                sequence: ['243', '81', '27', '?'],
+                question: 'Bilangan selanjutnya dari pola di atas adalah...',
+                options: ['3', '6', '9', '12'],
+                answerIndex: 2,
+                explanation: 'Aturan polanya adalah dibagi 3 (÷3): 243 ÷ 3 = 81, 81 ÷ 3 = 27, maka 27 ÷ 3 = 9.'
+            },
+            // Soal 9 - Penjumlahan (Kunci: D / index 3)
+            {
+                id: 9,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Dina menabung uang logam setiap minggu dengan aturan tetap:',
+                sequence: ['15', '27', '39', '51', '?'],
+                question: 'Jumlah tabungan Dina pada minggu ke-5 adalah...',
+                options: ['60', '61', '62', '63'],
+                answerIndex: 3,
+                explanation: 'Selisih antar bilangan adalah +12 (27 − 15 = 12). Maka 51 + 12 = 63.'
+            },
+            // Soal 10 - Pengurangan (Kunci: C / index 2)
+            {
+                id: 10,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Stok buku tulis di koperasi sekolah berkurang setiap hari secara teratur:',
+                sequence: ['120', '105', '90', '75', '?'],
+                question: 'Sisa buku tulis pada hari berikutnya adalah...',
+                options: ['65', '55', '60', '50'],
+                answerIndex: 2,
+                explanation: 'Aturan polanya adalah dikurangi 15 (−15): 120 − 15 = 105, ..., 75 − 15 = 60.'
+            },
+            // Soal 11 - Perkalian (Kunci: B / index 1)
+            {
+                id: 11,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Dalam sebuah permainan, poin pemain dikalikan bilangan yang sama setiap naik level:',
+                sequence: ['3', '6', '12', '24', '?'],
+                question: 'Poin pemain pada level ke-5 adalah...',
+                options: ['36', '48', '30', '60'],
+                answerIndex: 1,
+                explanation: 'Aturan polanya adalah dikali 2 (×2): 3 × 2 = 6, 6 × 2 = 12, 12 × 2 = 24, maka 24 × 2 = 48.'
+            },
+            // Soal 12 - Pembagian (Kunci: A / index 0)
+            {
+                id: 12,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Seutas tali sepanjang 400 cm dipotong menjadi bagian-bagian lebih pendek dengan aturan tetap:',
+                sequence: ['400', '200', '100', '?'],
+                question: 'Panjang potongan tali berikutnya adalah...',
+                options: ['50', '25', '75', '40'],
+                answerIndex: 0,
+                explanation: 'Aturan polanya adalah dibagi 2 (÷2): 400 ÷ 2 = 200, 200 ÷ 2 = 100, maka 100 ÷ 2 = 50.'
+            },
+            // Soal 13 - Penjumlahan (Kunci: A / index 0)
+            {
+                id: 13,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Amati barisan bilangan loncat berikut:',
+                sequence: ['24', '33', '42', '51', '?'],
+                question: 'Angka yang tepat untuk menggantikan tanda tanya (?) adalah...',
+                options: ['60', '59', '61', '58'],
+                answerIndex: 0,
+                explanation: 'Aturan polanya adalah ditambah 9 (+9): 24 + 9 = 33, 33 + 9 = 42, 42 + 9 = 51, maka 51 + 9 = 60.'
+            },
+            // Soal 14 - Pengurangan (Kunci: B / index 1)
+            {
+                id: 14,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Perhatikan pola bilangan mundur berikut ini:',
+                sequence: ['98', '87', '76', '?', '54'],
+                question: 'Bilangan yang hilang di tengah barisan adalah...',
+                options: ['66', '65', '64', '67'],
+                answerIndex: 1,
+                explanation: 'Aturan polanya adalah dikurangi 11 (−11): 98 − 11 = 87, 87 − 11 = 76, maka 76 − 11 = 65.'
+            },
+            // Soal 15 - Perkalian (Kunci: C / index 2)
+            {
+                id: 15,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Perhatikan pola bilangan yang membesar berikut:',
+                sequence: ['2', '8', '32', '?'],
+                question: 'Bilangan ke-4 pada pola tersebut adalah...',
+                options: ['64', '96', '128', '112'],
+                answerIndex: 2,
+                explanation: 'Aturan polanya adalah dikali 4 (×4): 2 × 4 = 8, 8 × 4 = 32, maka 32 × 4 = 128.'
+            },
+            // Soal 16 - Pembagian (Kunci: D / index 3)
+            {
+                id: 16,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Amati barisan bilangan dengan aturan pembagian berikut:',
+                sequence: ['125', '25', '?'],
+                question: 'Bilangan yang tepat untuk mengisi tanda tanya (?) adalah...',
+                options: ['15', '10', '20', '5'],
+                answerIndex: 3,
+                explanation: 'Aturan polanya adalah dibagi 5 (÷5), karena 125 ÷ 5 = 25. Maka 25 ÷ 5 = 5.'
+            },
+            // Soal 17 - Penjumlahan (Kunci: C / index 2)
+            {
+                id: 17,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Sebuah gedung teater memiliki jumlah kursi yang bertambah tetap di tiap baris belakangnya:',
+                sequence: ['18', '24', '30', '?', '42'],
+                question: 'Jumlah kursi pada baris ke-4 adalah...',
+                options: ['34', '35', '36', '38'],
+                answerIndex: 2,
+                explanation: 'Setiap baris bertambah 6 kursi (+6): 18 + 6 = 24, 24 + 6 = 30, maka 30 + 6 = 36.'
+            },
+            // Soal 18 - Pengurangan (Kunci: A / index 0)
+            {
+                id: 18,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Suhu ruangan pendingin diturunkan secara bertahap dengan selisih yang sama:',
+                sequence: ['32', '27', '22', '17', '?'],
+                question: 'Suhu ruangan pada pengukuran berikutnya adalah...',
+                options: ['12', '13', '11', '14'],
+                answerIndex: 0,
+                explanation: 'Aturan polanya adalah dikurangi 5 (−5): 32 − 5 = 27, 27 − 5 = 22, 22 − 5 = 17, maka 17 − 5 = 12.'
+            },
+            // Soal 19 - Perkalian (Kunci: D / index 3)
+            {
+                id: 19,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Perhatikan barisan bilangan perkalian berikut ini:',
+                sequence: ['5', '10', '20', '?', '80'],
+                question: 'Bilangan yang tepat untuk mengisi bagian yang kosong adalah...',
+                options: ['25', '30', '35', '40'],
+                answerIndex: 3,
+                explanation: 'Aturan polanya adalah dikali 2 (×2): 5 × 2 = 10, 10 × 2 = 20, maka 20 × 2 = 40 (dan 40 × 2 = 80).'
+            },
+            // Soal 20 - Pembagian (Kunci: B / index 1)
+            {
+                id: 20,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Perhatikan pola bilangan berikut dengan teliti:',
+                sequence: ['160', '80', '40', '20', '?'],
+                question: 'Bilangan ke-5 pada barisan tersebut adalah...',
+                options: ['15', '10', '5', '8'],
+                answerIndex: 1,
+                explanation: 'Aturan polanya adalah dibagi 2 (÷2): 160 ÷ 2 = 80, 80 ÷ 2 = 40, 40 ÷ 2 = 20, maka 20 ÷ 2 = 10.'
+            },
+            // Soal 21 - Penjumlahan (Kunci: B / index 1)
+            {
+                id: 21,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Bilangan pertama adalah 11. Aturan polanya adalah "ditambah 13".',
+                sequence: ['11', '24', '37', '?'],
+                question: 'Bilangan ke-4 dari pola tersebut adalah...',
+                options: ['49', '50', '51', '48'],
+                answerIndex: 1,
+                explanation: 'Aturannya adalah +13: 11 + 13 = 24, 24 + 13 = 37, maka 37 + 13 = 50.'
+            },
+            // Soal 22 - Pengurangan (Kunci: C / index 2)
+            {
+                id: 22,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Bilangan pertama adalah 72. Aturan polanya adalah "dikurangi 8".',
+                sequence: ['72', '64', '56', '?'],
+                question: 'Bilangan ke-4 dari pola tersebut adalah...',
+                options: ['46', '50', '48', '44'],
+                answerIndex: 2,
+                explanation: 'Aturannya adalah −8: 72 − 8 = 64, 64 − 8 = 56, maka 56 − 8 = 48.'
+            },
+            // Soal 23 - Perkalian (Kunci: A / index 0)
+            {
+                id: 23,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Perhatikan pola perkalian bilangan berikut:',
+                sequence: ['4', '12', '36', '?'],
+                question: 'Bilangan selanjutnya adalah...',
+                options: ['108', '72', '96', '144'],
+                answerIndex: 0,
+                explanation: 'Aturannya adalah dikali 3 (×3): 4 × 3 = 12, 12 × 3 = 36, maka 36 × 3 = 108.'
+            },
+            // Soal 24 - Pembagian (Kunci: D / index 3)
+            {
+                id: 24,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Perhatikan deretan bilangan berikut:',
+                sequence: ['256', '64', '16', '?'],
+                question: 'Bilangan yang tepat untuk mengisi tanda tanya (?) adalah...',
+                options: ['8', '2', '6', '4'],
+                answerIndex: 3,
+                explanation: 'Aturannya adalah dibagi 4 (÷4): 256 ÷ 4 = 64, 64 ÷ 4 = 16, maka 16 ÷ 4 = 4.'
+            },
+            // Soal 25 - Penjumlahan (Kunci: D / index 3)
+            {
+                id: 25,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Amati pola loncatan bilangan kelipatan berikut:',
+                sequence: ['25', '50', '75', '100', '?'],
+                question: 'Bilangan berikutnya adalah...',
+                options: ['115', '120', '150', '125'],
+                answerIndex: 3,
+                explanation: 'Aturan polanya adalah ditambah 25 (+25): 25 + 25 = 50, ..., 100 + 25 = 125.'
+            },
+            // Soal 26 - Pengurangan (Kunci: A / index 0)
+            {
+                id: 26,
+                category: 'Pengurangan (−)',
+                badge: 'rose',
+                story: 'Perhatikan barisan bilangan mundur berikut ini:',
+                sequence: ['100', '88', '76', '?'],
+                question: 'Bilangan ke-4 yang tepat adalah...',
+                options: ['64', '66', '68', '62'],
+                answerIndex: 0,
+                explanation: 'Aturan polanya adalah dikurangi 12 (−12): 100 − 12 = 88, 88 − 12 = 76, maka 76 − 12 = 64.'
+            },
+            // Soal 27 - Perkalian (Kunci: C / index 2)
+            {
+                id: 27,
+                category: 'Perkalian (×)',
+                badge: 'purple',
+                story: 'Amati pola bilangan berikut: 1, 5, 25, ...',
+                sequence: ['1', '5', '25', '?'],
+                question: 'Bilangan yang tepat untuk mengisi tanda tanya (?) adalah...',
+                options: ['50', '75', '125', '100'],
+                answerIndex: 2,
+                explanation: 'Aturan polanya adalah dikali 5 (×5): 1 × 5 = 5, 5 × 5 = 25, maka 25 × 5 = 125.'
+            },
+            // Soal 28 - Pembagian (Kunci: B / index 1)
+            {
+                id: 28,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Perhatikan barisan bilangan mengecil berikut:',
+                sequence: ['300', '150', '?'],
+                question: 'Jika aturan polanya dibagi 2 (÷2), maka bilangan ke-3 adalah...',
+                options: ['50', '75', '100', '25'],
+                answerIndex: 1,
+                explanation: 'Aturan polanya adalah dibagi 2 (÷2): 300 ÷ 2 = 150, maka 150 ÷ 2 = 75.'
+            },
+            // Soal 29 - Penjumlahan / Pengurangan Analisis (Kunci: C / index 2)
+            {
+                id: 29,
+                category: 'Penjumlahan (+)',
+                badge: 'emerald',
+                story: 'Diketahui barisan bilangan: 14, 21, 28, 35, 42.',
+                sequence: ['14', '21', '28', '35', '42'],
+                question: 'Aturan pembentukan pola bilangan di atas adalah...',
+                options: ['Dikurangi 7 (−7)', 'Dikali 2 (×2)', 'Ditambah 7 (+7)', 'Ditambah 6 (+6)'],
+                answerIndex: 2,
+                explanation: 'Dari 14 ke 21 bertambah 7 (+7), 21 ke 28 bertambah 7 (+7), dan seterusnya.'
+            },
+            // Soal 30 - Pembagian Analisis (Kunci: A / index 0)
+            {
+                id: 30,
+                category: 'Pembagian (÷)',
+                badge: 'amber',
+                story: 'Diketahui barisan bilangan: 162, 54, 18, 6.',
+                sequence: ['162', '54', '18', '6'],
+                question: 'Aturan pembentukan pola bilangan di atas adalah...',
+                options: ['Dibagi 3 (÷3)', 'Dikurangi 36 (−36)', 'Dibagi 2 (÷2)', 'Dikali 3 (×3)'],
+                answerIndex: 0,
+                explanation: '162 ÷ 3 = 54, 54 ÷ 3 = 18, dan 18 ÷ 3 = 6. Jadi aturannya adalah dibagi 3 (÷3).'
+            }
+        ];
+
+        // --- 3. MANAJEMEN STATE & PENYIMPANAN OTOMATIS (LOCALSTORAGE) ---
+        const STORAGE_KEY = 'kuis_pola_bilangan_sd4_v1';
+
+        let quizState = {
+            studentName: '',
+            currentIdx: 0,
+            // Menyimpan index pilihan yang diklik user untuk tiap soal (null jika belum dijawab)
+            userAnswers: new Array(questionsBank.length).fill(null)
+        };
+
+        function loadStateFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && Array.isArray(parsed.userAnswers) && parsed.userAnswers.length === questionsBank.length) {
+                        quizState = parsed;
+                    }
+                }
+            } catch (e) {
+                console.warn('Gagal memuat penyimpanan lokal:', e);
+            }
+            document.getElementById('studentName').value = quizState.studentName || '';
+        }
+
+        function saveStateToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(quizState));
+                // Animasi kecil pada indikator tersimpan
+                const indicator = document.getElementById('saveIndicator');
+                indicator.innerHTML = '<span>✅</span> Tersimpan!';
+                setTimeout(() => {
+                    indicator.innerHTML = '<span>💾</span> Tersimpan Otomatis';
+                }, 1200);
+            } catch (e) {
+                console.warn('Gagal menyimpan ke penyimpanan lokal:', e);
+            }
+        }
+
+        function saveStudentName() {
+            quizState.studentName = document.getElementById('studentName').value;
+            saveStateToStorage();
+        }
+
+        // --- 4. RENDER SOAL, PILIHAN GANDA & UMPAN BALIK LANGSUNG ---
+        const optionLetters = ['A', 'B', 'C', 'D'];
+
+        function renderCurrentQuestion() {
+            const idx = quizState.currentIdx;
+            const q = questionsBank[idx];
+            const userChoice = quizState.userAnswers[idx];
+            const isAnswered = userChoice !== null;
+            const isCorrect = isAnswered && (userChoice === q.answerIndex);
+
+            const card = document.getElementById('questionCard');
+            card.classList.remove('fade-in');
+            void card.offsetWidth; // Trigger reflow untuk animasi
+            card.classList.add('fade-in');
+
+            // Render barisan angka (jika dijawab benar, tanda '?' diisi jawaban benar)
+            const sequenceHtml = q.sequence.map((item, i) => {
+                let displayVal = item;
+                let boxClass = 'bg-sky-50 border-2 border-sky-200 text-slate-800';
+
+                if (item === '?') {
+                    if (isAnswered) {
+                        displayVal = q.options[q.answerIndex];
+                        boxClass = isCorrect
+                            ? 'bg-emerald-100 border-2 border-emerald-500 text-emerald-800 shadow-sm'
+                            : 'bg-amber-100 border-2 border-amber-500 text-amber-900 shadow-sm';
+                    } else {
+                        boxClass = 'bg-indigo-50 border-2 border-dashed border-indigo-400 text-indigo-700';
+                    }
+                }
+
+                return `
+                    <div class="min-w-[3.2rem] sm:min-w-[3.8rem] px-3 py-2.5 sm:py-3 rounded-2xl font-fredoka font-bold text-lg sm:text-2xl flex items-center justify-center ${boxClass}">
+                        ${displayVal}
+                    </div>
+                    ${i < q.sequence.length - 1 ? '<span class="text-slate-400 font-bold text-sm sm:text-base">➔</span>' : ''}
+                `;
+            }).join('');
+
+            // Render tombol opsi A, B, C, D
+            const optionsHtml = q.options.map((optText, optIdx) => {
+                let btnStyle = 'bg-white hover:bg-sky-50 border-2 border-slate-200 hover:border-sky-400 text-slate-800';
+                let badgeStyle = 'bg-slate-100 text-slate-700';
+                let statusIcon = '';
+
+                if (isAnswered) {
+                    if (optIdx === q.answerIndex) {
+                        // Kunci jawaban benar selalu ditandai hijau
+                        btnStyle = 'bg-emerald-50 border-2 border-emerald-500 text-emerald-950 shadow-sm';
+                        badgeStyle = 'bg-emerald-500 text-white';
+                        statusIcon = '<span class="text-lg">✅</span>';
+                    } else if (optIdx === userChoice && userChoice !== q.answerIndex) {
+                        // Pilihan user yang salah ditandai merah
+                        btnStyle = 'bg-rose-50 border-2 border-rose-500 text-rose-950';
+                        badgeStyle = 'bg-rose-500 text-white';
+                        statusIcon = '<span class="text-lg">❌</span>';
+                    } else {
+                        btnStyle = 'bg-slate-50 border-2 border-slate-200 text-slate-400 opacity-70';
+                        badgeStyle = 'bg-slate-200 text-slate-500';
+                    }
+                }
+
+                return `
+                    <button 
+                        onclick="selectOption(${optIdx})" 
+                        ${isAnswered ? 'disabled' : ''}
+                        class="w-full text-left p-3.5 sm:p-4 rounded-2xl transition flex items-center justify-between gap-3 ${btnStyle} ${!isAnswered ? 'cursor-pointer active:scale-[0.99]' : 'cursor-default'}">
+                        <div class="flex items-center gap-3">
+                            <span class="w-9 h-9 rounded-xl font-fredoka font-bold text-base flex items-center justify-center shrink-0 ${badgeStyle}">
+                                ${optionLetters[optIdx]}
+                            </span>
+                            <span class="font-fredoka font-bold text-lg sm:text-xl">${optText}</span>
+                        </div>
+                        ${statusIcon}
+                    </button>
+                `;
+            }).join('');
+
+            // Render umpan balik langsung jika soal sudah dijawab
+            let feedbackHtml = '';
+            if (isAnswered) {
+                if (isCorrect) {
+                    feedbackHtml = `
+                        <div class="mt-5 bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 sm:p-5 text-emerald-950 fade-in">
+                            <div class="flex items-center gap-2 font-fredoka font-bold text-lg text-emerald-700 mb-1">
+                                <span>🎉</span>
+                                <span>Jawaban Kamu BENAR!</span>
+                            </div>
+                            <p class="text-sm sm:text-base text-emerald-900 leading-relaxed">
+                                <strong>Pembahasan:</strong> ${q.explanation}
+                            </p>
+                        </div>
+                    `;
+                } else {
+                    feedbackHtml = `
+                        <div class="mt-5 bg-rose-50 border-2 border-rose-300 rounded-2xl p-4 sm:p-5 text-rose-950 fade-in">
+                            <div class="flex items-center gap-2 font-fredoka font-bold text-lg text-rose-700 mb-1">
+                                <span>❌</span>
+                                <span>Kurang Tepat! Jawaban yang benar adalah ${optionLetters[q.answerIndex]} (${q.options[q.answerIndex]}).</span>
+                            </div>
+                            <p class="text-sm sm:text-base text-rose-900 leading-relaxed">
+                                <strong>Pembahasan:</strong> ${q.explanation}
+                            </p>
+                        </div>
+                    `;
+                }
+            }
+
+            card.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                    <span class="bg-sky-600 text-white font-fredoka font-bold text-sm px-3.5 py-1 rounded-full">
+                        Soal Nomor ${q.id} dari ${questionsBank.length}
+                    </span>
+                </div>
+
+                <p class="text-slate-600 text-sm sm:text-base mb-4">${q.story}</p>
+
+                <!-- Kotak Pola Bilangan -->
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-3 bg-slate-50/80 p-4 sm:p-5 rounded-2xl border-2 border-slate-200/80 mb-5">
+                    ${sequenceHtml}
+                </div>
+
+                <h2 class="font-bold text-slate-900 text-base sm:text-lg mb-4">${q.question}</h2>
+
+                <!-- Pilihan Ganda A, B, C, D -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    ${optionsHtml}
+                </div>
+
+                <!-- Umpan Balik Benar / Salah Langsung -->
+                ${feedbackHtml}
+            `;
+
+            updateNavigationControls();
+            renderNavigationGrid();
+            updateStatsHeader();
+        }
+
+        function selectOption(optIdx) {
+            const idx = quizState.currentIdx;
+            // Cegah perubahan jika sudah dijawab
+            if (quizState.userAnswers[idx] !== null) return;
+
+            quizState.userAnswers[idx] = optIdx;
+            saveStateToStorage();
+
+            const isCorrect = (optIdx === questionsBank[idx].answerIndex);
+            playTone(isCorrect ? 'correct' : 'wrong');
+
+            renderCurrentQuestion();
+        }
+
+        // --- 5. SISTEM NAVIGASI NOMOR SOAL ---
+        function navigateQuestion(delta) {
+            const nextIdx = quizState.currentIdx + delta;
+            if (nextIdx >= 0 && nextIdx < questionsBank.length) {
+                playTone('click');
+                quizState.currentIdx = nextIdx;
+                saveStateToStorage();
+                renderCurrentQuestion();
+            }
+        }
+
+        function jumpToQuestion(idx) {
+            playTone('click');
+            quizState.currentIdx = idx;
+            saveStateToStorage();
+            // Pastikan layar kuis terlihat jika sedang membuka rapor akhir
+            document.getElementById('finalReportScreen').classList.add('hidden');
+            document.getElementById('quizWorkspace').classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        function updateNavigationControls() {
+            const idx = quizState.currentIdx;
+            document.getElementById('prevBtn').disabled = (idx === 0);
+
+            const nextBtn = document.getElementById('nextBtn');
+            const finishBtn = document.getElementById('finishBtn');
+
+            if (idx === questionsBank.length - 1) {
+                nextBtn.classList.add('hidden');
+                finishBtn.classList.remove('hidden');
+            } else {
+                nextBtn.classList.remove('hidden');
+                finishBtn.classList.add('hidden');
+            }
+        }
+
+        function renderNavigationGrid() {
+            const grid = document.getElementById('navGrid');
+            grid.innerHTML = questionsBank.map((q, idx) => {
+                const ans = quizState.userAnswers[idx];
+                const isCurrent = (idx === quizState.currentIdx);
+
+                let btnClass = 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200';
+                if (ans !== null) {
+                    if (ans === q.answerIndex) {
+                        btnClass = 'bg-emerald-500 text-white border border-emerald-600';
+                    } else {
+                        btnClass = 'bg-rose-500 text-white border border-rose-600';
+                    }
+                }
+
+                if (isCurrent) {
+                    btnClass += ' ring-4 ring-sky-300 font-extrabold scale-105';
+                }
+
+                return `
+                    <button onclick="jumpToQuestion(${idx})" class="h-10 rounded-xl font-fredoka font-bold text-sm transition flex items-center justify-center ${btnClass}">
+                        ${q.id}
+                    </button>
+                `;
+            }).join('');
+        }
+
+        function updateStatsHeader() {
+            let answeredCount = 0;
+            let correctCount = 0;
+
+            quizState.userAnswers.forEach((ans, idx) => {
+                if (ans !== null) {
+                    answeredCount++;
+                    if (ans === questionsBank[idx].answerIndex) {
+                        correctCount++;
+                    }
+                }
+            });
+
+            const score = Math.round((correctCount / questionsBank.length) * 100);
+            const progressPercent = (answeredCount / questionsBank.length) * 100;
+
+            document.getElementById('statAnswered').textContent = answeredCount;
+            document.getElementById('statCorrect').textContent = correctCount;
+            document.getElementById('statScore').textContent = score;
+            document.getElementById('progressBar').style.width = progressPercent + '%';
+        }
+
+        // --- 6. LAYAR RAPOR HASIL AKHIR ---
+        function showFinalSummary() {
+            playTone('win');
+            document.getElementById('quizWorkspace').classList.add('hidden');
+            document.getElementById('finalReportScreen').classList.remove('hidden');
+
+            let correctCount = 0;
+            let wrongCount = 0;
+            const catStats = {
+                'Penjumlahan (+)': { correct: 0, total: 0, color: 'emerald' },
+                'Pengurangan (−)': { correct: 0, total: 0, color: 'rose' },
+                'Perkalian (×)': { correct: 0, total: 0, color: 'purple' },
+                'Pembagian (÷)': { correct: 0, total: 0, color: 'amber' }
+            };
+
+            questionsBank.forEach((q, idx) => {
+                const ans = quizState.userAnswers[idx];
+                catStats[q.category].total++;
+                if (ans !== null) {
+                    if (ans === q.answerIndex) {
+                        correctCount++;
+                        catStats[q.category].correct++;
+                    } else {
+                        wrongCount++;
+                    }
+                }
+            });
+
+            const finalGrade = Math.round((correctCount / questionsBank.length) * 100);
+            const name = quizState.studentName.trim() || 'Detektif Matematika';
+
+            document.getElementById('finalGrade').textContent = finalGrade;
+            document.getElementById('finalCorrect').textContent = correctCount;
+            document.getElementById('finalWrong').textContent = wrongCount;
+
+            if (finalGrade >= 80) {
+                document.getElementById('reportEmoji').textContent = '🏆🎉';
+                document.getElementById('reportTitle').textContent = `Luar Biasa, ${name}!`;
+                document.getElementById('reportSubtitle').textContent = 'Kamu sudah sangat mahir memecahkan rahasia pola bilangan!';
+                if (typeof confetti === 'function') {
+                    confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                }
+            } else if (finalGrade >= 60) {
+                document.getElementById('reportEmoji').textContent = '🌟👏';
+                document.getElementById('reportTitle').textContent = `Bagus Sekali, ${name}!`;
+                document.getElementById('reportSubtitle').textContent = 'Terus berlatih agar semakin teliti di semua aturan pola bilangan.';
+            } else {
+                document.getElementById('reportEmoji').textContent = '💪📚';
+                document.getElementById('reportTitle').textContent = `Tetap Semangat, ${name}!`;
+                document.getElementById('reportSubtitle').textContent = 'Coba periksa kembali pembahasan di setiap nomor soal untuk belajar lebih lanjut.';
+            }
+
+            // Render rincian per kategori
+            const breakdownEl = document.getElementById('categoryBreakdown');
+            breakdownEl.innerHTML = Object.keys(catStats).map(catName => {
+                const st = catStats[catName];
+                const pct = Math.round((st.correct / st.total) * 100);
+                return `
+                    <div class="bg-white p-3.5 rounded-2xl border border-${st.color}-200 flex items-center justify-between">
+                        <div>
+                            <p class="font-bold text-sm text-slate-800">${catName}</p>
+                            <p class="text-xs text-slate-500">Benar ${st.correct} dari ${st.total} soal</p>
+                        </div>
+                        <span class="font-fredoka font-bold text-base px-3 py-1 rounded-xl bg-${st.color}-100 text-${st.color}-800">
+                            ${pct}%
+                        </span>
+                    </div>
+                `;
+            }).join('');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToQuiz() {
+            playTone('click');
+            document.getElementById('finalReportScreen').classList.add('hidden');
+            document.getElementById('quizWorkspace').classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        // --- 7. RESET KUIS ---
+        function openResetModal() {
+            playTone('click');
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            playTone('click');
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        function confirmResetQuiz() {
+            playTone('click');
+            localStorage.removeItem(STORAGE_KEY);
+            quizState = {
+                studentName: document.getElementById('studentName').value || '',
+                currentIdx: 0,
+                userAnswers: new Array(questionsBank.length).fill(null)
+            };
+            saveStateToStorage();
+            closeResetModal();
+            document.getElementById('finalReportScreen').classList.add('hidden');
+            document.getElementById('quizWorkspace').classList.remove('hidden');
+            renderCurrentQuestion();
+        }
+
+        // --- INISIALISASI SAAT HALAMAN DIMUAT ---
+        window.onload = function() {
+            loadStateFromStorage();
+            renderCurrentQuestion();
+        };
+    </script>
+</body>
+</html>
